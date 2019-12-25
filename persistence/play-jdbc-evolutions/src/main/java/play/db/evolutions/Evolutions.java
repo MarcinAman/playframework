@@ -92,6 +92,25 @@ public class Evolutions {
    *
    * @param database The database to apply the evolutions to.
    * @param reader The reader to read the evolutions.
+   * @param autocommit Whether autocommit should be used.
+   * @param schema The schema where all the play evolution tables are saved in
+   * @param table Table to keep evolutions' data
+   */
+  public static void applyEvolutions(
+      Database database,
+      play.api.db.evolutions.EvolutionsReader reader,
+      boolean autocommit,
+      String schema,
+      String table) {
+    DatabaseEvolutions evolutions = new DatabaseEvolutions(database.asScala(), schema, table);
+    evolutions.evolve(evolutions.scripts(reader), autocommit);
+  }
+
+  /**
+   * Apply evolutions for the given database.
+   *
+   * @param database The database to apply the evolutions to.
+   * @param reader The reader to read the evolutions.
    * @param schema The schema where all the play evolution tables are saved in
    */
   public static void applyEvolutions(
@@ -152,6 +171,22 @@ public class Evolutions {
    */
   public static void cleanupEvolutions(Database database, boolean autocommit, String schema) {
     DatabaseEvolutions evolutions = new DatabaseEvolutions(database.asScala(), schema);
+    evolutions.evolve(evolutions.resetScripts(), autocommit);
+  }
+
+  /**
+   * Cleanup evolutions for the given database.
+   *
+   * <p>This will run the down scripts for all the applied evolutions.
+   *
+   * @param database The database to apply the evolutions to.
+   * @param autocommit Whether autocommit should be used.
+   * @param schema The schema where all the play evolution tables are saved in
+   * @param table Table to keep evolutions' data
+   */
+  public static void cleanupEvolutions(
+      Database database, boolean autocommit, String schema, String table) {
+    DatabaseEvolutions evolutions = new DatabaseEvolutions(database.asScala(), schema, table);
     evolutions.evolve(evolutions.resetScripts(), autocommit);
   }
 

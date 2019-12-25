@@ -102,7 +102,7 @@ class EvolutionsSpec extends Specification {
 
     trait ProvideHelperForTestingSchema { this: WithEvolutions =>
       // Check if the play_evolutions table was created within the testschema
-      val resultSet = executeQuery("select count(0) from testschema.play_evolutions")
+      val resultSet = executeQuery("select count(0) from testschema.sample_play_evolutions")
       resultSet.next must beTrue
       resultSet.close()
     }
@@ -124,7 +124,7 @@ class EvolutionsSpec extends Specification {
 
     // Test if the play_evolutions table gets created within a schema
     "create test schema derby" in new CreateSchema with WithDerbyEvolutionsSchema
-    "reset the database to trigger creation of the play_evolutions table in the testschema derby" in new ResetDatabase
+    "reset the database to trigger creation of the sample_play_evolutions table in the testschema derby" in new ResetDatabase
       with WithDerbyEvolutionsSchema
     "provide a helper for testing derby schema" in new ProvideHelperForTestingSchema with WithDerbyEvolutionsSchema
   }
@@ -156,7 +156,8 @@ class EvolutionsSpec extends Specification {
   trait WithDerbyEvolutionsSchema extends WithDerbyEvolutions {
     override lazy val evolutions: DatabaseEvolutions = new DatabaseEvolutions(
       database = database,
-      schema = "testschema"
+      schema = "testschema",
+      tableName = "sample_play_evolutions"
     )
   }
 

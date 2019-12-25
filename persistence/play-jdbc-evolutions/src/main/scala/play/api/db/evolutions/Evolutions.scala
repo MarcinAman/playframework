@@ -8,16 +8,10 @@ import java.io.File
 import java.nio.charset.Charset
 import java.nio.file._
 
-import play.api.db.DBApi
-import play.api.db.Database
-import play.api.inject.ApplicationLifecycle
-import play.api.inject.DefaultApplicationLifecycle
+import play.api.{Configuration, Environment, Logger, Mode}
+import play.api.db.{DBApi, Database}
+import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
 import play.api.libs.Codecs.sha1
-import play.api.Configuration
-import play.api.Environment
-import play.api.Logger
-import play.api.Mode
-import play.api.Play
 import play.core.DefaultWebCommands
 import play.utils.PlayIO
 
@@ -201,14 +195,16 @@ object Evolutions {
    * @param evolutionsReader The reader to read the evolutions.
    * @param autocommit Whether to use autocommit or not, evolutions will be manually committed if false.
    * @param schema The schema where all the play evolution tables are saved in
+   * @param table Table to keep evolutions' data
    */
   def applyEvolutions(
       database: Database,
       evolutionsReader: EvolutionsReader = ThisClassLoaderEvolutionsReader,
       autocommit: Boolean = true,
-      schema: String = ""
+      schema: String = "",
+      table: String = "play_evolutions"
   ): Unit = {
-    val dbEvolutions = new DatabaseEvolutions(database, schema)
+    val dbEvolutions = new DatabaseEvolutions(database, schema, table)
     val evolutions   = dbEvolutions.scripts(evolutionsReader)
     dbEvolutions.evolve(evolutions, autocommit)
   }
@@ -220,11 +216,12 @@ object Evolutions {
    * scripts for all the evolutions that have been previously applied to the database.
    *
    * @param database The database to clean the evolutions for.
-   * @param autocommit Whether to use atocommit or not, evolutions will be manually committed if false.
+   * @param autocommit Whether to use autocommit or not, evolutions will be manually committed if false.
    * @param schema The schema where all the play evolution tables are saved in
+   * @param table Table to keep evolutions' data
    */
-  def cleanupEvolutions(database: Database, autocommit: Boolean = true, schema: String = ""): Unit = {
-    val dbEvolutions = new DatabaseEvolutions(database, schema)
+  def cleanupEvolutions(database: Database, autocommit: Boolean = true, schema: String = "", table: String = "play_evolutions"): Unit = {
+    val dbEvolutions = new DatabaseEvolutions(database, schema, table)
     val evolutions   = dbEvolutions.resetScripts()
     dbEvolutions.evolve(evolutions, autocommit)
   }
@@ -237,14 +234,16 @@ object Evolutions {
    * @param autocommit Whether to use autocommit or not, evolutions will be manually committed if false.
    * @param block The block to execute
    * @param schema The schema where all the play evolution tables are saved in
+   * @param table Table to keep evolutions' data
    */
   def withEvolutions[T](
       database: Database,
       evolutionsReader: EvolutionsReader = ThisClassLoaderEvolutionsReader,
       autocommit: Boolean = true,
-      schema: String = ""
+      schema: String = "",
+      table: String = "play_evolutions"
   )(block: => T): T = {
-    applyEvolutions(database, evolutionsReader, autocommit, schema)
+    applyEvolutions(database, evolutionsReader, autocommit, schema, table)
     try {
       block
     } finally {
